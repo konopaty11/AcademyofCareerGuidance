@@ -21,7 +21,16 @@ public class Figure : MonoBehaviour, IDragHandler
     {
         Vector3 startPos = rect.position;
 
-        rect.position = eventData.position;
+        Vector2 localPoint;
+
+        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            rect.parent as RectTransform,
+            eventData.position,
+            eventData.pressEventCamera ?? Camera.main,
+            out localPoint))
+        {
+            rect.anchoredPosition = localPoint;
+        }
 
         if (SpecialityManager.Instance.CreateLogo.IsIntersect(rect))
             rect.position = startPos;
