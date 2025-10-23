@@ -37,31 +37,6 @@ public class LoadManager : MonoBehaviour
     /// <returns></returns>
     IEnumerator LoadScreen()
     {
-        //_loadWindow.SetActive(true);
-
-        //AsyncOperation _operation = SceneManager.LoadSceneAsync(_firstSceneIndex);
-        //_operation.allowSceneActivation = false;
-
-        //while (!_operation.isDone)
-        //{
-        //    float _progress = _operation.progress / 0.9f;
-
-        //    _progressBar.value = _progress;
-        //    _textProgress.text = _patternText + (_progress * 100) + "%";
-
-        //    if (_progress >= 0.99f)
-        //    {
-        //        _textProgress.text = _patternText + 100 + "%";
-        //        _operation.allowSceneActivation = true;
-
-        //        break;
-        //    }
-
-        //    yield return null;
-        //}
-
-        //_loadWindow.SetActive(false);
-
         _loadWindow.SetActive(true);
 
         float duration = 2f;
