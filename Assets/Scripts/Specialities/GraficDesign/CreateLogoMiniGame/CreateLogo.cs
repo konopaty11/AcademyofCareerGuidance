@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
 
 /// <summary>
@@ -18,6 +17,7 @@ public class CreateLogo : Speciality
     List<RectTransform> figureRects = new();
 
     public List<GameObject> Figures => figures;
+
     void OnEnable()
     {
         Saves.SavesLoad += RestoreSettings;
@@ -33,7 +33,7 @@ public class CreateLogo : Speciality
     /// </summary>
     void RestoreSettings()
     {
-        IsComplete = SpecialityManager.Instance.Saves.SavesData.IsCompareLogoComplite;
+        IsComplete = SpecialityManager.Instance.Saves.SavesData.IsCreateLogoComplite;
     }
 
     /// <summary>
