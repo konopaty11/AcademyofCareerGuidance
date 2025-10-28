@@ -7,32 +7,21 @@ using UnityEngine.UI;
 /// <summary>
 /// игра раскраски изображения
 /// </summary>
-public class ColoringMiniGame : Speciality, IPointerClickHandler
+public class ColoringMiniGame : Speciality
 {
+    [SerializeField] CaptureScreen captureScreen;
+    [SerializeField] RectTransform captureArea;
+    [SerializeField] List<ClickArea> areas;
     [SerializeField] GameObject readyBtn;
     [SerializeField] GameObject gameWindow;
 
-    [Header("Настройки")]
     [SerializeField] Image targetImage;       
-    [SerializeField] Color currentColor;     
+    [SerializeField] Color currentColor;
 
-    Texture2D originalTexture;  
-    Texture2D workTexture;      
-    Sprite originalSprite;
-    Vector2 uv;
+    public Color CurrentColor => currentColor;
 
-    bool isColorSelected = false;
-    bool isUVDecided = false;
     void Start()
     {
-        originalSprite = targetImage.sprite;
-        originalTexture = originalSprite.texture;
-
-        workTexture = new Texture2D(originalTexture.width, originalTexture.height);
-        workTexture.SetPixels(originalTexture.GetPixels());
-        workTexture.Apply();
-
-        ApplyTextureToImage();
     }
 
     /// <summary>
@@ -42,137 +31,7 @@ public class ColoringMiniGame : Speciality, IPointerClickHandler
     public void SetCurrentColor(Color color)
     {
         currentColor = color;
-        isColorSelected = true;
     }
-
-    /// <summary>
-    /// закраска области
-    /// </summary>
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        Vector2 localPoint;
-        if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            targetImage.rectTransform,
-            eventData.position,
-            eventData.pressEventCamera,
-            out localPoint))
-        {
-            uv = ConvertToTextureUV(localPoint);
-            isUVDecided = true;
-        }
-    }
-
-    /// <summary>
-    /// конвертация координат нажатия в координаты текстуры
-    /// </summary>
-    Vector2 ConvertToTextureUV(Vector2 localPoint)
-    {
-        Rect rect = targetImage.rectTransform.rect;
-        float x = (localPoint.x - rect.x) / rect.width;
-        float y = (localPoint.y - rect.y) / rect.height;
-        return new Vector2(x, y);
-    }
-
-    public IEnumerator StartFill(Color choseColor)
-    {
-        while (!isUVDecided)
-            yield return null;
-
-        isUVDecided = false;
-        FloodFill(uv, choseColor);
-
-        if (ClickArea.CountAreasClicked == 5)
-        {
-            IsComplete = true;
-            SpecialityManager.Instance.Saves.SavesData.IsColoringComplite = IsComplete;
-            SpecialityManager.Instance.Saves.Save();
-            readyBtn.SetActive(true);
-        }
-    }
-
-    /// <summary>
-    /// заливка области
-    /// </summary>
-    void FloodFill(Vector2 startUV, Color choseColor)
-    {
-        if (!isColorSelected || currentColor != choseColor) return;
-
-        int startX = (int)(startUV.x * workTexture.width);
-        int startY = (int)(startUV.y * workTexture.height);
-
-        if (!CanFillHere(startX, startY)) return;
-
-        Color targetColor = workTexture.GetPixel(startX, startY);
-
-        if (targetColor == currentColor) return;
-
-        Queue<Vector2Int> pixels = new Queue<Vector2Int>();
-        pixels.Enqueue(new Vector2Int(startX, startY));
-
-        while (pixels.Count > 0)
-        {
-            Vector2Int point = pixels.Dequeue();
-            int x = point.x;
-            int y = point.y;
-
-            if (x < 0 || x >= workTexture.width || y < 0 || y >= workTexture.height)
-                continue;
-
-            Color pixelColor = workTexture.GetPixel(x, y);
-
-            if (IsOutline(pixelColor) || pixelColor == currentColor)
-                continue;
-
-            if (pixelColor.a < 0.1f || pixelColor == targetColor)
-            {
-                workTexture.SetPixel(x, y, currentColor);
-
-                pixels.Enqueue(new Vector2Int(x + 1, y)); 
-                pixels.Enqueue(new Vector2Int(x - 1, y)); 
-                pixels.Enqueue(new Vector2Int(x, y + 1)); 
-                pixels.Enqueue(new Vector2Int(x, y - 1)); 
-            }
-        }
-
-        workTexture.Apply();
-        ApplyTextureToImage();
-    }
-
-    /// <summary>
-    /// проверка заливки
-    /// </summary>
-    private bool CanFillHere(int x, int y)
-    {
-        if (x < 0 || x >= workTexture.width || y < 0 || y >= workTexture.height)
-            return false;
-
-        Color pixel = workTexture.GetPixel(x, y);
-
-        return !IsOutline(pixel);
-    }
-
-    /// <summary>
-    /// контур ли пиксель
-    /// </summary>
-    private bool IsOutline(Color color)
-    {
-        return color.a > 0.1f; 
-    }
-
-    /// <summary>
-    /// применение тексиуры к изображению
-    /// </summary>
-    private void ApplyTextureToImage()
-    {
-        Sprite newSprite = Sprite.Create(
-            workTexture,
-            originalSprite.rect,
-            originalSprite.pivot,
-            originalSprite.pixelsPerUnit
-        );
-        targetImage.sprite = newSprite;
-    }
-
 
     /// <summary>
     /// загрузка настроек
@@ -193,7 +52,7 @@ public class ColoringMiniGame : Speciality, IPointerClickHandler
 
     public void CloseGame()
     {
-        GalleryManager.Instance.SetNextSprite(targetImage.sprite);
+        CaptureImage();
         StartCoroutine(Close());
     }
 
@@ -201,5 +60,49 @@ public class ColoringMiniGame : Speciality, IPointerClickHandler
     {
         yield return new WaitForEndOfFrame();
         gameWindow.SetActive(false);
+    }
+
+    public void CheckAreas()
+    {
+        foreach (ClickArea area in areas)
+        {
+            if (!area.IsColored) return;
+        }
+
+        IsComplete = true;
+        SpecialityManager.Instance.Saves.SavesData.IsColoringComplite = IsComplete;
+        SpecialityManager.Instance.Saves.Save();
+        readyBtn.SetActive(true);
+    }
+
+    void CaptureImage()
+    {
+        Vector3[] corners = new Vector3[4];
+        captureArea.GetWorldCorners(corners);
+
+        Canvas canvas = captureArea.GetComponentInParent<Canvas>();
+        Camera camera = canvas?.worldCamera ?? Camera.main;
+
+        for (int i = 0; i < 4; i++)
+        {
+            corners[i] = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
+        }
+
+        float minX = Mathf.Min(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+        float maxX = Mathf.Max(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+        float minY = Mathf.Min(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
+        float maxY = Mathf.Max(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
+
+        int width = (int)(maxX - minX);
+        int height = (int)(maxY - minY);
+        int x = (int)minX;
+        int y = (int)minY;
+
+        x = Mathf.Clamp(x, 0, Screen.width - width);
+        y = Mathf.Clamp(y, 0, Screen.height - height);
+        width = Mathf.Min(width, Screen.width - x);
+        height = Mathf.Min(height, Screen.height - y);
+
+        captureScreen.CaptureAreaAsSprite(width, height, x, y);
     }
 }
