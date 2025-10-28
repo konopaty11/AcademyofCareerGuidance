@@ -180,31 +180,33 @@ public class GasOil : Speciality
     /// </summary>
     void CapturePipeline()
     {
-
         Vector3[] corners = new Vector3[4];
         captureArea.GetWorldCorners(corners);
 
         Canvas canvas = captureArea.GetComponentInParent<Canvas>();
-        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera)
+        Camera camera = canvas?.worldCamera ?? Camera.main;
+
+        for (int i = 0; i < 4; i++)
         {
-            Camera camera = canvas.worldCamera ?? Camera.main;
-            if (camera != null)
-            {
-                for (int i = 0; i < 4; i++)
-                {
-                    Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, corners[i]);
-                    corners[i] = camera.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, camera.nearClipPlane));
-                }
-            }
+            corners[i] = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
         }
 
-        int width = (int)(corners[2].x - corners[0].x);
-        int height = (int)(corners[2].y - corners[0].y);
-        int x = (int)corners[0].x;
-        int y = (int)corners[0].y;
+        float minX = Mathf.Min(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+        float maxX = Mathf.Max(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+        float minY = Mathf.Min(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
+        float maxY = Mathf.Max(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
+
+        int width = (int)(maxX - minX);
+        int height = (int)(maxY - minY);
+        int x = (int)minX;
+        int y = (int)minY;
+
+        x = Mathf.Clamp(x, 0, Screen.width - width);
+        y = Mathf.Clamp(y, 0, Screen.height - height);
+        width = Mathf.Min(width, Screen.width - x);
+        height = Mathf.Min(height, Screen.height - y);
 
         captureScreen.CaptureAreaAsSprite(width, height, x, y);
-
     }
 
     /// <summary>

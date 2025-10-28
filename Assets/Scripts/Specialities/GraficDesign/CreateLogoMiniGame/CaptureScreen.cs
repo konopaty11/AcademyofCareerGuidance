@@ -86,7 +86,6 @@ public class CaptureScreen : MonoBehaviour
     IEnumerator CaptureCoroutine(int captureWidth, int captureHeight, int captureX, int captureY)
     {
         yield return new WaitForEndOfFrame();
-
         Texture2D texture = new Texture2D(captureWidth, captureHeight, TextureFormat.RGBA32, false);
         texture.ReadPixels(new Rect(captureX, captureY, captureWidth, captureHeight), 0, 0);
         texture.Apply();
