@@ -132,8 +132,21 @@ public class CreateLogo : Speciality
         Vector3[] corners = new Vector3[4];
         rectTransform.GetWorldCorners(corners);
 
-        Vector2 size = new(corners[2].x - corners[0].x, corners[2].y - corners[0].y);
+        Canvas canvas = rectTransform.GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera)
+        {
+            Camera camera = canvas.worldCamera ?? Camera.main;
+            if (camera != null)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, corners[i]);
+                    corners[i] = camera.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, camera.nearClipPlane));
+                }
+            }
+        }
 
+        Vector2 size = new Vector2(corners[2].x - corners[0].x, corners[2].y - corners[0].y);
         return new Rect(corners[0], size);
     }
 }

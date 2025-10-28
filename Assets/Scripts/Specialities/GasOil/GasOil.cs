@@ -180,8 +180,23 @@ public class GasOil : Speciality
     /// </summary>
     void CapturePipeline()
     {
+
         Vector3[] corners = new Vector3[4];
         captureArea.GetWorldCorners(corners);
+
+        Canvas canvas = captureArea.GetComponentInParent<Canvas>();
+        if (canvas != null && canvas.renderMode == RenderMode.ScreenSpaceCamera)
+        {
+            Camera camera = canvas.worldCamera ?? Camera.main;
+            if (camera != null)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(null, corners[i]);
+                    corners[i] = camera.ScreenToWorldPoint(new Vector3(screenPoint.x, screenPoint.y, camera.nearClipPlane));
+                }
+            }
+        }
 
         int width = (int)(corners[2].x - corners[0].x);
         int height = (int)(corners[2].y - corners[0].y);

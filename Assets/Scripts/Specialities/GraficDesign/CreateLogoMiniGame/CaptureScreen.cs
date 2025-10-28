@@ -45,15 +45,33 @@ public class CaptureScreen : MonoBehaviour
         {
             Figure figure = figureObject.GetComponent<Figure>();
 
-            int leftFigure = (int)figure.GetLeftPoint();
-            int rightFigure = (int)figure.GetRightPoint();
-            int topFigure = (int)figure.GetTopPoint();
-            int bottomFigure = (int)figure.GetBottomPoint();
+            RectTransform rectTransform = figureObject.GetComponent<RectTransform>();
 
-            left = left > leftFigure || left == -1 ? leftFigure : left;
+            Vector3[] corners = new Vector3[4];
+            rectTransform.GetWorldCorners(corners);
+
+            Canvas canvas = rectTransform.GetComponentInParent<Canvas>();
+            Camera camera = canvas?.worldCamera ?? Camera.main;
+
+            int leftFigure = int.MaxValue;
+            int rightFigure = int.MinValue;
+            int topFigure = int.MinValue;
+            int bottomFigure = int.MaxValue;
+
+            foreach (Vector3 corner in corners)
+            {
+                Vector3 screenPoint = RectTransformUtility.WorldToScreenPoint(camera, corner);
+
+                leftFigure = Mathf.Min(leftFigure, (int)screenPoint.x);
+                rightFigure = Mathf.Max(rightFigure, (int)screenPoint.x);
+                topFigure = Mathf.Max(topFigure, (int)screenPoint.y);
+                bottomFigure = Mathf.Min(bottomFigure, (int)screenPoint.y);
+            }
+
+            left = (left == -1) ? leftFigure : Mathf.Min(left, leftFigure);
             right = Mathf.Max(right, rightFigure);
             top = Mathf.Max(top, topFigure);
-            bottom = bottom > bottomFigure || bottom == -1 ? bottomFigure : bottom;
+            bottom = (bottom == -1) ? bottomFigure : Mathf.Min(bottom, bottomFigure);
         }
     }
 
@@ -69,12 +87,10 @@ public class CaptureScreen : MonoBehaviour
     {
         yield return new WaitForEndOfFrame();
 
-        // Захватываем фиксированную область экрана
         Texture2D texture = new Texture2D(captureWidth, captureHeight, TextureFormat.RGBA32, false);
         texture.ReadPixels(new Rect(captureX, captureY, captureWidth, captureHeight), 0, 0);
         texture.Apply();
 
-        // Создаем спрайт
         Sprite sprite = Sprite.Create(
             texture,
             new Rect(0, 0, captureWidth, captureHeight),
