@@ -13,6 +13,7 @@ public class LogoManager : Speciality
     [SerializeField] Text _timerText;
     [SerializeField] GameObject _compareLogoWindow;
     [SerializeField] GameObject _readyBtn;
+    [SerializeField] GameObject _panel;
 
     public static LogoManager Instance { get; private set; }
 
@@ -48,7 +49,12 @@ public class LogoManager : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         compareLogos.CreateRandomLogos();
         StartTimer();
         gameWindow.SetActive(true);

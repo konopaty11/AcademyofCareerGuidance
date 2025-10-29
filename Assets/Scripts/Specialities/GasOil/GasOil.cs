@@ -15,6 +15,7 @@ public class GasOil : Speciality
     [SerializeField] CaptureScreen captureScreen;
     [SerializeField] RectTransform captureArea;
     [SerializeField] GameObject readyBtn;
+    [SerializeField] GameObject _panel;
 
     Pipe[,] grid = new Pipe[7, 4];
 
@@ -52,7 +53,12 @@ public class GasOil : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         IsComplete = false;
         gameWindow.SetActive(true);
         readyBtn.SetActive(false);

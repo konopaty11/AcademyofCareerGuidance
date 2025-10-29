@@ -11,6 +11,7 @@ public class CreateLogo : Speciality
     [SerializeField] GameObject gameWindow;
     [SerializeField] List<GameObject> figurePrefabs;
     [SerializeField] List<RectTransform> targetTransfroms;
+    [SerializeField] GameObject _panel;
 
     List<RectTransform> currentTransforms = new();
     List<GameObject> figures = new();
@@ -41,7 +42,12 @@ public class CreateLogo : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         gameWindow.SetActive(true);
         CreateRandomFigures();
     }

@@ -14,6 +14,7 @@ public class ColoringMiniGame : Speciality
     [SerializeField] List<ClickArea> areas;
     [SerializeField] GameObject readyBtn;
     [SerializeField] GameObject gameWindow;
+    [SerializeField] GameObject _panel;
 
     [SerializeField] Image targetImage;       
     [SerializeField] Color currentColor;
@@ -46,7 +47,12 @@ public class ColoringMiniGame : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         gameWindow.SetActive(true);
     }
 

@@ -13,6 +13,7 @@ public class Programming : Speciality
     [SerializeField] InputField inputField;
     [SerializeField] Text codeText;
     [SerializeField] RectTransform codeTransform;
+    [SerializeField] GameObject _panel;
 
     string code;
 
@@ -60,7 +61,12 @@ public class Programming : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         gameWindow.SetActive(true);
         ResetGame();
         StartCoroutine(ShowCode());

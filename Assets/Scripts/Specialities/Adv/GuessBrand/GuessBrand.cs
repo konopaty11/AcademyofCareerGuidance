@@ -16,6 +16,7 @@ public class GuessBrand : Speciality
     [SerializeField] InputField inputField;
     [SerializeField] Image background;
     [SerializeField] Text _timerText;
+    [SerializeField] GameObject _panel;
 
     Dictionary<string, string> phrasesBrands = new()
     {
@@ -73,8 +74,12 @@ public class GuessBrand : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
-
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         StartTimer();
         gameWindow.SetActive(true);
 

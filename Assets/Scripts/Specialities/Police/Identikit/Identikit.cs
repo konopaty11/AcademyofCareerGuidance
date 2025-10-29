@@ -27,12 +27,15 @@ public class Identikit : Speciality
     [SerializeField] Text _timerText;
     [SerializeField] GameObject _timer;
     [SerializeField] GameObject scrollView;
+    [SerializeField] GameObject dropdown;
+    [SerializeField] GameObject startBtn;
 
     [SerializeField] GameObject gameWindow;
     [SerializeField] GameObject startGameBtn;
     [SerializeField] GameObject readyBtn;
     [SerializeField] GameObject faceItems;
     [SerializeField] GameObject identikit;
+    [SerializeField] GameObject _panel;
 
     Coroutine _timerCoroutine;
     List<FaceItem> choseItems = new();
@@ -69,7 +72,12 @@ public class Identikit : Speciality
     /// </summary>
     public void StartGame()
     {
-        if (IsComplete) return;
+        if (IsComplete)
+        {
+            gameWindow.SetActive(true);
+            _panel.SetActive(true);
+            return;
+        }
         gameWindow.SetActive(true);
         SetIdentikit();
     }
@@ -100,6 +108,9 @@ public class Identikit : Speciality
         image.gameObject.SetActive(false);
         _timer.gameObject.SetActive(false);
         scrollView.SetActive(true);
+        dropdown.SetActive(true);
+        startBtn.SetActive(false);
+        readyBtn.SetActive(true);
     }
 
     /// <summary>
@@ -287,19 +298,7 @@ public class Identikit : Speciality
     /// </summary>
     public void ResetMiniGame()
     {
-        eyes.ResetImage();
-        face.ResetImage();
-        hair.ResetImage();
-        beard.ResetImage();
-        glasses.ResetImage();
-        lips.ResetImage();
-        nose.ResetImage();
-
-        startGameBtn.SetActive(true);
-        readyBtn.SetActive(false);
-        faceItems.SetActive(false);
-        identikit.SetActive(true);
-        _timer.gameObject.SetActive(true);
+        identikit.SetActive(false);
     }
 
     /// <summary>
